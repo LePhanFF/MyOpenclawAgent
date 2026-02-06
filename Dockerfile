@@ -5,14 +5,13 @@ FROM python:3.12-slim as base
 # Install system dependencies
 RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update && apt-get install -y --no-install-recommends \
-    # Docker and DinD
+# Docker and DinD
     docker.io \
-    docker-buildx-plugin \
+    ca-certificates \
     # Development tools
     git \
     curl \
     wget \
-    jq \
     # Discord dependencies
     libopus0 \
     libffi-dev \
@@ -20,7 +19,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
     # Audio dependencies for Discord voice (optional)
     libsodium-dev \
     libopus-dev \
-    # Additional utilities
+    # Build dependencies
+    build-essential \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -42,13 +42,15 @@ COPY --chown=openclaw:openclaw entrypoint.sh ./
 COPY --chown=openclaw:openclaw requirements.txt ./
 
 # Set proper permissions
-RUN chmod +x entrypoint.sh scripts/*.sh
+RUN chmod +x entrypoint.sh
+RUN find scripts/ -name "*.sh" -exec chmod +x {} \;
+
+# Create necessary directories before switching user
+RUN mkdir -p /app/logs /app/github-workspace /app/build-cache /app/data
+RUN chown -R openclaw:openclaw /app
 
 # Switch to non-root user
 USER openclaw
-
-# Create necessary directories
-RUN mkdir -p /app/logs /app/github-workspace /app/build-cache /app/data
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
