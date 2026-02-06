@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  openclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    environment:
+      # Load environment from .env file
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://host.docker.internal:8001/v1}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-dummy}
+      - MODEL_NAME=${MODEL_NAME:-/model}
+      
+      # DinD Configuration
+      - DOCKER_HOST=tcp://dind:2376
+      - DOCKER_TLS_VERIFY=1
+      - DOCKER_CERT_PATH=/certs/client
+      
+      # Application Configuration
+      - PYTHONPATH=/app
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DEBUG=${DEBUG:-false}
+      - CONFIG_PATH=/app/config
+    volumes:
+      - docker-certs-client:/certs/client:ro
+      - ./config:/app/config:ro
+      - ./volumes/github-workspace:/app/github-workspace
+      - ./volumes/build-cache:/app/build-cache
+      - ./volumes/logs:/app/logs
+      - openclaw-data:/app/data
+    ports:
+      - "8080:8080"  # Health check API
+    depends_on:
+      dind:
+        condition: service_healthy
+    networks:
+      - openclaw-network
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Docker-in-Docker daemon service
+  dind:
+    image: docker:dind-rootless
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DOCKER_DRIVER=overlay2
+    volumes:
+      - docker-certs-ca:/certs/ca
+      - docker-certs-client:/certs/client
+      - ./volumes/docker-data:/home/rootless/.local/share/docker
+      - ./volumes/github-workspace:/workspace
+    networks:
+      - openclaw-network
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  docker-certs-ca:
+    driver: local
+  docker-certs-client:
+    driver: local
+  openclaw-data:
+    driver: local
+
+networks:
+  openclaw-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+          gateway: 172.22.0.1
+    driver_opts:
+      com.docker.network.bridge.name: openclaw-br0

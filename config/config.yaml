@@ -1,0 +1,48 @@
+# OpenClaw Main Configuration
+application:
+  name: "OpenClaw AI Agent"
+  version: "1.0.0"
+  debug: false
+  log_level: "INFO"
+  
+# vLLM Configuration
+llm:
+  base_url: "http://host.docker.internal:8001/v1"
+  model_name: "/model"
+  api_key: "sk-dummy"
+  max_tokens: 4000
+  temperature: 0.7
+  
+# Docker Configuration
+docker:
+  host: "tcp://dind:2376"
+  tls_verify: true
+  cert_path: "/certs/client"
+  default_registry: "docker.io"
+  build_timeout: 300
+  
+# Workspace Configuration
+workspace:
+  mount_path: "/workspace"
+  github_workspace: "/app/github-workspace"
+  build_cache: "/app/build-cache"
+  log_path: "/app/logs"
+  
+# Security Configuration
+security:
+  allowed_discord_servers: []
+  admin_users: []
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 30
+
+# Web Server Configuration (for health checks)
+web:
+  host: "0.0.0.0"
+  port: 8080
+  
+# Monitoring Configuration
+monitoring:
+  prometheus_enabled: true
+  prometheus_port: 9090
+  health_check_interval: 30
