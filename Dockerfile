@@ -7,6 +7,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update && apt-get install -y --no-install-recommends \
 # Docker and DinD
     docker.io \
+    docker-cli \
     ca-certificates \
     # Development tools
     git \
@@ -24,8 +25,10 @@ RUN --mount=type=cache,target=/var/cache/apt \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m -u 1000 -s /bin/bash openclaw
+# Modify existing docker group to match host GID (988) and create non-root user
+RUN groupmod -g 988 docker && \
+    useradd -m -u 1000 -s /bin/bash openclaw && \
+    usermod -aG docker openclaw
 
 WORKDIR /app
 

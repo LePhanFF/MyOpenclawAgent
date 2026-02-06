@@ -7,7 +7,6 @@ uvicorn[standard]>=0.24.0
 
 # Discord integration
 py-cord>=2.5.0
-discord-py>=2.4.0
 
 # GitHub integration
 PyGithub>=2.3.0
