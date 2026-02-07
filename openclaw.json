@@ -1,0 +1,39 @@
+# Local Development Configuration for OpenClaw.ai Gateway
+# ================================================
+
+# This configuration disables authentication and uses your local vLLM
+
+{
+  "gateway": {
+    "port": 18789,
+    "auth": "none"
+  },
+  "models": {
+    "providers": {
+      "qwen3-local": {
+        "baseUrl": "http://host.docker.internal:8356/v1",
+        "apiKey": "sk-dummy",
+        "models": ["nvidia/Qwen3-Next-80B-A3B-Instruct-NVFP4"],
+        "defaultModel": "nvidia/Qwen3-Next-80B-A3B-Instruct-NVFP4"
+      }
+    },
+    "defaultProvider": "qwen3-local"
+  },
+  "agents": {
+    "defaults": {
+      "model": "qwen3-local",
+      "workspace": "~/.openclaw/workspace"
+    }
+  },
+  "channels": {
+    "discord": {
+      "enabled": true
+    }
+  }
+}
+
+# INSTRUCTIONS
+# 1. Save this as: ~/.openclaw/openclaw.json
+# 2. Restart the openclaw-official-openclaw-gateway-1 container with this config
+# 3. Access http://localhost:18789 in your browser
+# 4. The dashboard should now load without asking for a token

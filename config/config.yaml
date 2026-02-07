@@ -7,8 +7,8 @@ application:
   
 # vLLM Configuration
 llm:
-  base_url: "http://host.docker.internal:8001/v1"
-  model_name: "/model"
+  base_url: "http://host.docker.internal:8356/v1"
+  model_name: "nvidia/Qwen3-Next-80B-A3B-Instruct-NVFP4"
   api_key: "sk-dummy"
   max_tokens: 4000
   temperature: 0.7

@@ -8,9 +8,9 @@ services:
       # Load environment from .env file
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://host.docker.internal:8001/v1}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://host.docker.internal:8356/v1}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-dummy}
-      - MODEL_NAME=${MODEL_NAME:-/model}
+      - MODEL_NAME=${MODEL_NAME:-nvidia/Qwen3-Next-80B-A3B-Instruct-NVFP4}
       
       # DinD Configuration (simplified)
       - DOCKER_HOST=unix:///var/run/docker.sock
